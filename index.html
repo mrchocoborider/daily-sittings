@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Sittings</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%98%3C/text%3E%3C/svg%3E">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root{
+    color-scheme: light;
+    --bg:        #F1F4EE;
+    --panel:     #FBFCF9;
+    --panel-2:   #F5F8F1;
+    --ink:       #23291F;
+    --muted:     #6B7266;
+    --faint:     #9AA091;
+    --line:      #E0E5DA;
+    --accent:    #4F7A5B;
+    --accent-ink:#3C6147;
+    --accent-1:  #DCE7DC;
+    --accent-2:  #C6DAC6;
+    --amber:     #B8874A;
+    --disabled:  #EDEFE9;
+    --dot-empty: #D3DACC;
+    --shadow:    0 1px 2px rgba(35,41,31,.05), 0 8px 24px -16px rgba(35,41,31,.25);
+    --today-ring:#4F7A5B;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:        #14170F;
+      --panel:     #1D2118;
+      --panel-2:   #232819;
+      --ink:       #E9EDE1;
+      --muted:     #939A88;
+      --faint:     #6E7565;
+      --line:      #2C3225;
+      --accent:    #7FAE86;
+      --accent-ink:#9AC79F;
+      --accent-1:  #2A3628;
+      --accent-2:  #3A4C38;
+      --amber:     #D6A863;
+      --disabled:  #1A1E13;
+      --dot-empty: #3A4130;
+      --shadow:    0 1px 2px rgba(0,0,0,.3), 0 10px 30px -18px rgba(0,0,0,.7);
+      --today-ring:#7FAE86;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:        #14170F;
+    --panel:     #1D2118;
+    --panel-2:   #232819;
+    --ink:       #E9EDE1;
+    --muted:     #939A88;
+    --faint:     #6E7565;
+    --line:      #2C3225;
+    --accent:    #7FAE86;
+    --accent-ink:#9AC79F;
+    --accent-1:  #2A3628;
+    --accent-2:  #3A4C38;
+    --amber:     #D6A863;
+    --disabled:  #1A1E13;
+    --dot-empty: #3A4130;
+    --shadow:    0 1px 2px rgba(0,0,0,.3), 0 10px 30px -18px rgba(0,0,0,.7);
+    --today-ring:#7FAE86;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:clamp(20px,5vw,56px) 16px 72px;
+  }
+  .wrap{ max-width:660px; margin:0 auto; }
+
+  .topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .auth{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; min-height:32px; }
+  .btn{ font:inherit; font-size:13px; font-weight:600; padding:7px 13px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--ink); cursor:pointer; box-shadow:var(--shadow); transition:border-color .15s, color .15s; }
+  .btn:hover{ border-color:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:transparent; box-shadow:none; font-weight:500; color:var(--muted); }
+  .btn.ghost:hover{ color:var(--accent-ink); border-color:var(--line); }
+  .who{ font-size:13px; color:var(--muted); }
+
+  .eyebrow{ font-size:12px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent-ink); margin:0; }
+  h1{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:clamp(30px,7vw,44px); line-height:1.05; margin:6px 0 0; text-wrap:balance; letter-spacing:-.01em; }
+  .sub{ color:var(--muted); margin:10px 0 0; font-size:15px; max-width:46ch; }
+
+  .hero{ margin-top:clamp(24px,5vw,36px); display:grid; grid-template-columns:auto 1fr; gap:clamp(18px,4vw,32px); align-items:center; }
+  .ring{ position:relative; width:132px; height:132px; flex:none; display:grid; place-items:center; }
+  .ring i{ position:absolute; inset:0; border-radius:50%; border:1.5px solid var(--accent); opacity:.28; animation:breathe 8s ease-in-out infinite; }
+  .ring i:nth-child(2){ inset:14px; opacity:.42; animation-delay:-2.6s; }
+  .ring i:nth-child(3){ inset:28px; opacity:.6;  animation-delay:-5.2s; }
+  @keyframes breathe{ 0%,100%{ transform:scale(.9); opacity:.18 } 50%{ transform:scale(1.05); opacity:.5 } }
+  .ring .num{ font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:52px; line-height:1; color:var(--amber); font-variant-numeric:tabular-nums; }
+  .ring .cap{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:2px; }
+  .ring .ctr{ display:grid; place-items:center; text-align:center; }
+
+  .tiles{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 14px; box-shadow:var(--shadow); }
+  .tile .v{ font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:24px; font-variant-numeric:tabular-nums; }
+  .tile .k{ font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:1px; }
+
+  .cal{ margin-top:clamp(26px,5vw,40px); background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:clamp(14px,3vw,22px); }
+  .calhead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .month{ font-family:'Fraunces',Georgia,serif; font-weight:500; font-size:20px; }
+  .nav{ display:flex; gap:8px; }
+  .nav button{ width:34px; height:34px; border-radius:9px; border:1px solid var(--line); background:var(--panel-2); color:var(--ink); font-size:16px; cursor:pointer; display:grid; place-items:center; transition:background .15s, border-color .15s, opacity .15s; }
+  .nav button:hover:not(:disabled){ border-color:var(--accent); color:var(--accent-ink); }
+  .nav button:disabled{ opacity:.35; cursor:default; }
+
+  .dow{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
+  .dow span{ text-align:center; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
+
+  .grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cell{ border:1px solid var(--line); border-radius:11px; background:var(--panel-2); aspect-ratio:1/1.06; padding:6px 5px 7px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; position:relative; }
+  .cell.pad{ background:transparent; border:0; }
+  .cell.out{ background:var(--disabled); border-color:transparent; }
+  .cell.out .dnum{ color:var(--faint); opacity:.55; }
+  .cell.one{ background:var(--accent-1); border-color:var(--accent-1); }
+  .cell.both{ background:var(--accent-2); border-color:var(--accent-2); }
+  .cell.today{ box-shadow:0 0 0 2px var(--today-ring); }
+  .dnum{ font-size:12.5px; font-weight:600; color:var(--muted); font-variant-numeric:tabular-nums; align-self:flex-end; padding-right:1px; }
+  .cell.both .dnum, .cell.one .dnum{ color:var(--accent-ink); }
+
+  .dots{ display:flex; gap:6px; padding-bottom:1px; }
+  .dot{ width:15px; height:15px; border-radius:50%; padding:0; cursor:pointer; border:1.5px solid var(--dot-empty); background:transparent; transition:background .14s, border-color .14s, transform .1s; }
+  .dot:hover{ border-color:var(--accent); }
+  .dot:active{ transform:scale(.86); }
+  .dot.on{ background:var(--accent); border-color:var(--accent); }
+  .dot:disabled{ cursor:default; opacity:.4; }
+  .dot:disabled:hover{ border-color:var(--dot-empty); }
+  .dot:focus-visible{ outline:2px solid var(--accent-ink); outline-offset:2px; }
+
+  .foot{ margin-top:16px; display:flex; flex-wrap:wrap; gap:14px 20px; align-items:center; font-size:12.5px; color:var(--muted); }
+  .leg{ display:flex; align-items:center; gap:7px; }
+  .swatch{ width:15px; height:15px; border-radius:50%; border:1.5px solid var(--dot-empty); }
+  .swatch.on{ background:var(--accent); border-color:var(--accent); }
+  .note{ margin-top:22px; text-align:center; font-size:12px; color:var(--faint); }
+
+  @media (max-width:420px){
+    .hero{ grid-template-columns:1fr; }
+    .ring{ margin:0 auto; }
+    .dot{ width:13px; height:13px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ring i{ animation:none; }
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <p class="eyebrow">Meditation practice</p>
+    <div class="auth" id="auth"></div>
+  </div>
+  <h1>Daily Sittings</h1>
+  <p class="sub">Two sittings a day. Tick each one as you finish — a day keeps your streak alive as long as you sit at least once.</p>
+
+  <div class="hero">
+    <div class="ring" aria-hidden="true">
+      <i></i><i></i><i></i>
+      <div class="ctr">
+        <div class="num" id="streakNum">0</div>
+        <div class="cap">Day streak</div>
+      </div>
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="v" id="bestNum">0</div><div class="k">Best streak</div></div>
+      <div class="tile"><div class="v" id="totalNum">0</div><div class="k">Total sittings</div></div>
+      <div class="tile"><div class="v" id="monthNum">0</div><div class="k">This month</div></div>
+      <div class="tile"><div class="v" id="daysNum">0</div><div class="k">Days practiced</div></div>
+    </div>
+  </div>
+
+  <section class="cal">
+    <div class="calhead">
+      <div class="month" id="monthLabel">—</div>
+      <div class="nav">
+        <button id="prev" aria-label="Previous month">‹</button>
+        <button id="next" aria-label="Next month">›</button>
+      </div>
+    </div>
+    <div class="dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+    <div class="grid" id="grid"></div>
+    <div class="foot">
+      <div class="leg"><span class="swatch"></span> Not done</div>
+      <div class="leg"><span class="swatch on"></span> Sitting done</div>
+      <div class="leg"><span class="swatch" style="background:var(--accent-2);border-color:var(--accent-2)"></span> Both done</div>
+    </div>
+  </section>
+
+  <p class="note">Practice started 24 Aug 2026 · <span id="syncNote">saved on this device</span></p>
+</div>
+
+<!-- ============================================================= -->
+<!-- CORE: the tracker. Works fully on its own with browser storage. -->
+<!-- ============================================================= -->
+<script>
+(function(){
+  "use strict";
+  var START = "2026-08-24";
+  var KEY   = "daily-sittings-v1";
+
+  var data = {};
+  try{ var raw = localStorage.getItem(KEY); if(raw) data = JSON.parse(raw) || {}; }catch(e){ data = {}; }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){} }
+
+  function keyOf(y,m,d){ return y + "-" + String(m+1).padStart(2,"0") + "-" + String(d).padStart(2,"0"); }
+  function keyDate(dt){ return keyOf(dt.getFullYear(), dt.getMonth(), dt.getDate()); }
+  var now = new Date();
+  var TODAY = keyDate(now);
+  var view = { y: now.getFullYear(), m: now.getMonth() };
+  if(view.y < 2026 || (view.y===2026 && view.m < 7)){ view.y=2026; view.m=7; }
+
+  function rec(k){ return data[k] || [false,false]; }
+  function done(k){ var v=data[k]; return !!(v && (v[0]||v[1])); }
+  function inRange(k){ return k >= START && k <= TODAY; }
+
+  function computeStats(){
+    var total=0, days=0, monthCount=0;
+    var mp = keyOf(view.y, view.m, 1).slice(0,7);
+    for(var k in data){
+      var v = data[k]; if(!v) continue;
+      var c = (v[0]?1:0)+(v[1]?1:0);
+      total += c;
+      if(c>0){ days++; if(k.slice(0,7)===mp) monthCount += c; }
+    }
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if(!done(keyDate(d))) d.setDate(d.getDate()-1);
+    var cur=0;
+    while(keyDate(d) >= START && done(keyDate(d))){ cur++; d.setDate(d.getDate()-1); }
+    var best=0, run=0;
+    var s = new Date(2026,7,24), end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    for(var t=new Date(s); t<=end; t.setDate(t.getDate()+1)){
+      if(done(keyDate(t))){ run++; if(run>best) best=run; } else run=0;
+    }
+    return { total:total, days:days, month:monthCount, cur:cur, best:best };
+  }
+
+  function renderStats(){
+    var s = computeStats();
+    document.getElementById("streakNum").textContent = s.cur;
+    document.getElementById("bestNum").textContent   = s.best;
+    document.getElementById("totalNum").textContent  = s.total;
+    document.getElementById("monthNum").textContent  = s.month;
+    document.getElementById("daysNum").textContent   = s.days;
+  }
+
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function renderCal(){
+    document.getElementById("monthLabel").textContent = MONTHS[view.m] + " " + view.y;
+    document.getElementById("prev").disabled = (view.y===2026 && view.m===7);
+
+    var grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    var first = new Date(view.y, view.m, 1);
+    var lead = first.getDay();
+    var dim = new Date(view.y, view.m+1, 0).getDate();
+
+    for(var i=0;i<lead;i++){ var p=document.createElement("div"); p.className="cell pad"; grid.appendChild(p); }
+
+    for(var day=1; day<=dim; day++){
+      var k = keyOf(view.y, view.m, day);
+      var cell = document.createElement("div");
+      cell.className = "cell";
+      var active = inRange(k);
+      if(!active) cell.classList.add("out");
+      else{
+        var v = rec(k), c=(v[0]?1:0)+(v[1]?1:0);
+        if(c===2) cell.classList.add("both"); else if(c===1) cell.classList.add("one");
+      }
+      if(k===TODAY) cell.classList.add("today");
+
+      var num=document.createElement("div"); num.className="dnum"; num.textContent=day; cell.appendChild(num);
+
+      var dots=document.createElement("div"); dots.className="dots";
+      for(var si=0;si<2;si++){
+        var b=document.createElement("button");
+        b.className="dot"+(active && rec(k)[si] ? " on":"");
+        b.setAttribute("aria-label", "Sitting "+(si+1)+", "+MONTHS[view.m]+" "+day);
+        b.setAttribute("aria-pressed", active && rec(k)[si] ? "true":"false");
+        if(!active){ b.disabled=true; }
+        else{ b.dataset.k=k; b.dataset.s=si; }
+        dots.appendChild(b);
+      }
+      cell.appendChild(dots);
+      grid.appendChild(cell);
+    }
+  }
+
+  document.getElementById("grid").addEventListener("click", function(e){
+    var b = e.target.closest(".dot"); if(!b || b.disabled) return;
+    var k=b.dataset.k, si=+b.dataset.s;
+    var v = data[k] ? data[k].slice() : [false,false];
+    v[si] = !v[si];
+    var del = (!v[0] && !v[1]);
+    if(del) delete data[k]; else data[k]=v;
+    save();
+    renderCal();
+    renderStats();
+    if(window.SIT && SIT.onWrite){ try{ SIT.onWrite(k, del ? null : v); }catch(_){} }
+  });
+
+  document.getElementById("prev").addEventListener("click", function(){
+    if(view.m===0){ view.m=11; view.y--; } else view.m--;
+    renderCal(); renderStats();
+  });
+  document.getElementById("next").addEventListener("click", function(){
+    if(view.m===11){ view.m=0; view.y++; } else view.m++;
+    renderCal(); renderStats();
+  });
+
+  // Bridge for the optional sync layer (see the module script below).
+  window.SIT = {
+    snapshot: function(){ var o={}; for(var k in data){ o[k]=data[k].slice(); } return o; },
+    applyRemote: function(map){ data = map || {}; save(); renderCal(); renderStats(); },
+    onWrite: null,
+    status: function(t){ var e=document.getElementById("syncNote"); if(e) e.textContent = t; }
+  };
+
+  renderCal();
+  renderStats();
+})();
+</script>
+
+<!-- ============================================================= -->
+<!-- SYNC (optional): Firebase + Google sign-in for cross-device.   -->
+<!-- Fill in YOUR firebaseConfig below. Until you do, the page just  -->
+<!-- saves to this browser. See README.md for the 5-minute setup.   -->
+<!-- ============================================================= -->
+<script type="module">
+  // ---- PASTE YOUR FIREBASE WEB CONFIG HERE ----
+  const firebaseConfig = {
+    apiKey:     "PASTE_YOUR_API_KEY",
+    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+    projectId:  "PASTE_YOUR_PROJECT_ID",
+    appId:      "PASTE_YOUR_APP_ID"
+  };
+  // ---------------------------------------------
+
+  const configured = firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf("PASTE") !== 0;
+  const authEl = document.getElementById("auth");
+  const SIT = window.SIT;
+
+  if(!configured){
+    if(SIT) SIT.status("saved on this device · add Firebase config to sync");
+  } else {
+    try{
+      const V = "https://www.gstatic.com/firebasejs/10.12.5";
+      const { initializeApp } = await import(`${V}/firebase-app.js`);
+      const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+        = await import(`${V}/firebase-auth.js`);
+      const { getFirestore, doc, onSnapshot, setDoc, deleteField }
+        = await import(`${V}/firebase-firestore.js`);
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const store = getFirestore(app);
+      const provider = new GoogleAuthProvider();
+
+      let ref = null, unsub = null, migrated = false;
+
+      function showSignedOut(){
+        authEl.innerHTML = '<button class="btn" id="signin">Sign in to sync</button>';
+        document.getElementById("signin").onclick = () =>
+          signInWithPopup(auth, provider).catch(err => console.warn("sign-in", err));
+        if(SIT) SIT.status("sign in to sync across devices");
+      }
+      function showSignedIn(user){
+        authEl.innerHTML = '<span class="who"></span> <button class="btn ghost" id="signout">Sign out</button>';
+        authEl.querySelector(".who").textContent = user.email || "signed in";
+        document.getElementById("signout").onclick = () => signOut(auth);
+      }
+
+      // Push a single day's change up to Firestore (merge — never clobbers other days).
+      SIT.onWrite = function(k, arr){
+        if(!ref) return;
+        if(arr === null){
+          setDoc(ref, { days: { [k]: deleteField() } }, { merge:true }).catch(()=>{});
+        } else {
+          setDoc(ref, { days: { [k]: { a: !!arr[0], b: !!arr[1] } } }, { merge:true }).catch(()=>{});
+        }
+      };
+
+      onAuthStateChanged(auth, (user) => {
+        if(unsub){ unsub(); unsub = null; }
+        migrated = false;
+        if(!user){ ref = null; showSignedOut(); return; }
+
+        showSignedIn(user);
+        ref = doc(store, "meditation", user.uid);
+        unsub = onSnapshot(ref, (snap) => {
+          const d = snap.exists() ? (snap.data() || {}) : {};
+          const days = d.days || {};
+          const remote = {};
+          Object.keys(days).forEach(k => { const v = days[k] || {}; remote[k] = [!!v.a, !!v.b]; });
+
+          if(!migrated){
+            migrated = true;
+            const local = SIT.snapshot();
+            const toMigrate = {};
+            Object.keys(local).forEach(k => {
+              if(!(k in remote) && local[k] && (local[k][0] || local[k][1])){
+                toMigrate[k] = { a: !!local[k][0], b: !!local[k][1] };
+                remote[k] = local[k];
+              }
+            });
+            if(Object.keys(toMigrate).length){
+              setDoc(ref, { days: toMigrate }, { merge:true }).catch(()=>{});
+            }
+          }
+
+          SIT.applyRemote(remote);
+          SIT.status("synced to your account" + (user.email ? " · " + user.email : ""));
+        }, (err) => {
+          console.warn("firestore", err);
+          if(SIT) SIT.status("saved on this device · sync unavailable");
+        });
+      });
+    }catch(e){
+      console.warn("Firebase failed to load", e);
+      if(SIT) SIT.status("saved on this device · sync offline");
+    }
+  }
+</script>
+</body>
+</html>
